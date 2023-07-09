@@ -1,0 +1,147 @@
+info:
+  contact: {}
+paths:
+  /ping:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - 首頁
+  /post/createPost:
+    post:
+      parameters:
+      - description: 用戶名
+        in: formData
+        name: author
+        type: string
+      - description: 標題
+        in: formData
+        name: title
+        type: string
+      - description: 內容
+        in: formData
+        name: content
+        type: string
+      - description: 照片
+        in: formData
+        name: image
+        type: file
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 創建貼文
+      tags:
+      - 貼文資料
+  /post/getPostList:
+    get:
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 貼文列表
+      tags:
+      - 貼文資料
+  /user/createUser:
+    get:
+      parameters:
+      - description: 用戶名
+        in: query
+        name: name
+        type: string
+      - description: 密碼
+        in: query
+        name: password
+        type: string
+      - description: 確認密碼
+        in: query
+        name: repassword
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 新增用戶
+      tags:
+      - 用戶資料
+  /user/deleteUser:
+    get:
+      parameters:
+      - description: id
+        in: query
+        name: id
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 刪除用戶
+      tags:
+      - 用戶資料
+  /user/findUserByNameAndPwd:
+    get:
+      parameters:
+      - description: 用戶名
+        in: query
+        name: name
+        type: string
+      - description: 密碼
+        in: query
+        name: password
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 用戶登入
+      tags:
+      - 用戶資料
+  /user/getUserList:
+    get:
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      tags:
+      - 用戶資料
+  /user/updateUser:
+    post:
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        type: string
+      - description: 用戶名
+        in: formData
+        name: name
+        type: string
+      - description: 密碼
+        in: formData
+        name: password
+        type: string
+      - description: phone
+        in: formData
+        name: phone
+        type: string
+      - description: email
+        in: formData
+        name: email
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 修改用戶
+      tags:
+      - 用戶資料
+swagger: "2.0"
