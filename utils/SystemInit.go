@@ -22,7 +22,7 @@ func GetDB() *gorm.DB {
 
 func InitConfig() {
 	viper.SetConfigName("app")
-	viper.AddConfigPath("config")
+	viper.AddConfigPath("config") // 請注意路徑 /config | config
 	err := viper.ReadInConfig()
 	if err != nil {
 		fmt.Println(err)
