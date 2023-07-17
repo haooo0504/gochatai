@@ -34,6 +34,8 @@ paths:
           description: code","message"}
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: 創建貼文
       tags:
       - 貼文資料
@@ -44,6 +46,8 @@ paths:
           description: code","message"}
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: 貼文列表
       tags:
       - 貼文資料
@@ -82,6 +86,8 @@ paths:
           description: code","message"}
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: 刪除用戶
       tags:
       - 用戶資料
@@ -111,6 +117,8 @@ paths:
           description: code","message"}
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       tags:
       - 用戶資料
   /user/updateUser:
@@ -141,7 +149,15 @@ paths:
           description: code","message"}
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: 修改用戶
       tags:
       - 用戶資料
+securityDefinitions:
+  ApiKeyAuth:
+    description: Description for what is this security definition being used
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

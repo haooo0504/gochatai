@@ -16,6 +16,10 @@ var (
 	DB *gorm.DB
 )
 
+func GetDB() *gorm.DB {
+	return DB
+}
+
 func InitConfig() {
 	viper.SetConfigName("app")
 	viper.AddConfigPath("config")
@@ -36,7 +40,22 @@ func InitMySQL() {
 			Colorful:      true,
 		},
 	)
-	DB, _ = gorm.Open(mysql.Open(viper.GetString("mysql.dns")), &gorm.Config{Logger: newLogger})
+	var err error
+	for i := 0; i < 10; i++ { // Try to connect 10 times
+		DB, err = gorm.Open(mysql.Open(viper.GetString("mysql.dns")), &gorm.Config{Logger: newLogger})
+		if err != nil {
+			fmt.Printf((viper.GetString("mysql.dns")))
+
+			// fmt.Printf("failed to connect to the database: %v. Retrying in 10 seconds...\n", err)
+			time.Sleep(10 * time.Second)
+		} else {
+			break
+		}
+	}
+	if err != nil {
+		log.Fatalf("failed to connect to the database: %v", err)
+	}
+
 	// user := models.UserBasic{}
 	// DB.Find(&user)
 	// fmt.Println(user, 111)

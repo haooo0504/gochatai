@@ -13,6 +13,7 @@ import (
 )
 
 // GetPostList
+// @Security ApiKeyAuth
 // @Summary 貼文列表
 // @Tags 貼文資料
 // @Success 200 {string} json{"code","message"}
@@ -29,6 +30,7 @@ func GetPostList(c *gin.Context) {
 }
 
 // CreatePost
+// @Security ApiKeyAuth
 // @Summary 創建貼文
 // @Tags 貼文資料
 // @param author formData string false "用戶名"

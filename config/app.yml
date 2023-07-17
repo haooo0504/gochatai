@@ -1,5 +1,5 @@
 mysql:
-  dns: root:@tcp(127.0.0.1:3306)/gochatai?charset=utf8mb4&parseTime=True&loc=Local
+  dns: root:admin123@tcp(127.0.0.1:3306)/gochatai?charset=utf8mb4&parseTime=True&loc=Local
 redis:
   addr: "localhost:6379"
   password: ""

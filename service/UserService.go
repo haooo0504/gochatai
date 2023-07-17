@@ -7,12 +7,15 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
 // GetUserList
+// @Security ApiKeyAuth
 // @Tags 用戶資料
 // @Success 200 {string} json{"code","message"}
 // @Router /user/getUserList [get]
@@ -58,10 +61,26 @@ func FindUserByNameAndPwd(c *gin.Context) {
 	}
 	pwd := utils.MakePassword(password, user.Salt)
 	data = models.FindUserByNameAndPwd(name, pwd)
+
+	// Create the JWT token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = name
+	claims["admin"] = true
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	t, err := token.SignedString([]byte("your_secret_key"))
+	t = "Bearer " + t
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not sign the token"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0, // 0 成功 -1失敗
 		"message": "登入成功",
 		"data":    data,
+		"token":   t,
 	})
 }
 
@@ -110,6 +129,7 @@ func CreateUser(c *gin.Context) {
 }
 
 // DeleteUser
+// @Security ApiKeyAuth
 // @Summary 刪除用戶
 // @Tags 用戶資料
 // @param id query string false "id"
@@ -128,6 +148,7 @@ func DeleteUser(c *gin.Context) {
 }
 
 // UpdateUser
+// @Security ApiKeyAuth
 // @Summary 修改用戶
 // @Tags 用戶資料
 // @param id formData string false "id"

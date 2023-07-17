@@ -33,6 +33,11 @@ const docTemplate = `{
         },
         "/post/createPost": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "tags": [
                     "貼文資料"
                 ],
@@ -75,6 +80,11 @@ const docTemplate = `{
         },
         "/post/getPostList": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "tags": [
                     "貼文資料"
                 ],
@@ -127,6 +137,11 @@ const docTemplate = `{
         },
         "/user/deleteUser": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "tags": [
                     "用戶資料"
                 ],
@@ -181,6 +196,11 @@ const docTemplate = `{
         },
         "/user/getUserList": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "tags": [
                     "用戶資料"
                 ],
@@ -196,6 +216,11 @@ const docTemplate = `{
         },
         "/user/updateUser": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "tags": [
                     "用戶資料"
                 ],
@@ -241,6 +266,14 @@ const docTemplate = `{
                     }
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Description for what is this security definition being used",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

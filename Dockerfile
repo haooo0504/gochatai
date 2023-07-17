@@ -1,8 +1,10 @@
 # 開始於 Golang 基礎映像
-FROM golang:latest
+FROM golang:latest AS builder
 
 # 為我們的應用創建一個目錄
 WORKDIR /gochatai
+
+COPY config/app.yml /config/
 
 # 將 go.mod 和 go.sum 文件複製到工作目錄
 COPY go.mod go.sum ./
@@ -14,9 +16,16 @@ RUN go mod download
 COPY . .
 
 # 建置應用程式
-RUN go build -o main .
+RUN CGO_ENABLED=0 go build -o main .
 
-# 指定端口號
+# 第二階段：只需要一個最小化的基本映像即可
+FROM alpine:latest
+
+WORKDIR /root/
+
+# 從編譯器階段複製可執行檔到我們的最小映像
+COPY --from=builder /gochatai/main .
+
 EXPOSE 8082
 
 # 運行應用程式
