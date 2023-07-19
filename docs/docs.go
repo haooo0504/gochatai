@@ -100,7 +100,7 @@ const docTemplate = `{
             }
         },
         "/user/createUser": {
-            "get": {
+            "post": {
                 "tags": [
                     "用戶資料"
                 ],
@@ -110,19 +110,19 @@ const docTemplate = `{
                         "type": "string",
                         "description": "用戶名",
                         "name": "name",
-                        "in": "query"
+                        "in": "formData"
                     },
                     {
                         "type": "string",
                         "description": "密碼",
                         "name": "password",
-                        "in": "query"
+                        "in": "formData"
                     },
                     {
                         "type": "string",
                         "description": "確認密碼",
                         "name": "repassword",
-                        "in": "query"
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -165,23 +165,20 @@ const docTemplate = `{
             }
         },
         "/user/findUserByNameAndPwd": {
-            "get": {
+            "post": {
                 "tags": [
                     "用戶資料"
                 ],
                 "summary": "用戶登入",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "用戶名",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "密碼",
-                        "name": "password",
-                        "in": "query"
+                        "description": "用戶名和密碼",
+                        "name": "UserInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.UserInput"
+                        }
                     }
                 ],
                 "responses": {
@@ -264,6 +261,19 @@ const docTemplate = `{
                             "type": "string"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "service.UserInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         }

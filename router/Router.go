@@ -22,8 +22,8 @@ func Router() *gin.Engine {
 	public := r.Group("/")
 	public.GET("/ping", service.GetIndex)
 	public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	public.GET("/user/createUser", service.CreateUser)
-	public.GET("/user/findUserByNameAndPwd", service.FindUserByNameAndPwd)
+	public.POST("/user/createUser", service.CreateUser)
+	public.POST("/user/findUserByNameAndPwd", service.FindUserByNameAndPwd)
 
 	// Private (authenticated) routes
 	private := r.Group("/")

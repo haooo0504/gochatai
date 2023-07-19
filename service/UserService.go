@@ -14,6 +14,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type UserInput struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 // GetUserList
 // @Security ApiKeyAuth
 // @Tags 用戶資料
@@ -33,15 +38,19 @@ func GetUserList(c *gin.Context) {
 // GetUserList
 // @Summary 用戶登入
 // @Tags 用戶資料
-// @param name query string false "用戶名"
-// @param password query string false "密碼"
+// @param UserInput body UserInput true "用戶名和密碼"
 // @Success 200 {string} json{"code","message"}
-// @Router /user/findUserByNameAndPwd [get]
+// @Router /user/findUserByNameAndPwd [post]
 func FindUserByNameAndPwd(c *gin.Context) {
 	data := models.UserBasic{}
+	var userInput UserInput
+	if err := c.ShouldBindJSON(&userInput); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	name := c.Query("name")
-	password := c.Query("password")
+	name := userInput.Name
+	password := userInput.Password
 	user := models.FindUserByName(name)
 	if user.Name == "" {
 		c.JSON(400, gin.H{
@@ -59,8 +68,6 @@ func FindUserByNameAndPwd(c *gin.Context) {
 		})
 		return
 	}
-	pwd := utils.MakePassword(password, user.Salt)
-	data = models.FindUserByNameAndPwd(name, pwd)
 
 	// Create the JWT token
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -70,11 +77,13 @@ func FindUserByNameAndPwd(c *gin.Context) {
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
 	t, err := token.SignedString([]byte("your_secret_key"))
-	t = "Bearer " + t
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not sign the token"})
 		return
 	}
+
+	pwd := utils.MakePassword(password, user.Salt)
+	data = models.FindUserByNameAndPwd(name, pwd, t)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0, // 0 成功 -1失敗
@@ -87,16 +96,16 @@ func FindUserByNameAndPwd(c *gin.Context) {
 // CreateUser
 // @Summary 新增用戶
 // @Tags 用戶資料
-// @param name query string false "用戶名"
-// @param password query string false "密碼"
-// @param repassword query string false "確認密碼"
+// @param name formData string false "用戶名"
+// @param password formData string false "密碼"
+// @param repassword formData string false "確認密碼"
 // @Success 200 {string} json{"code","message"}
-// @Router /user/createUser [get]
+// @Router /user/createUser [post]
 func CreateUser(c *gin.Context) {
 	user := models.UserBasic{}
-	user.Name = c.Query("name")
-	password := c.Query("password")
-	repassword := c.Query("repassword")
+	user.Name = c.PostForm("name")
+	password := c.PostForm("password")
+	repassword := c.PostForm("repassword")
 
 	salt := fmt.Sprintf("%06d", rand.Int31())
 
@@ -117,9 +126,22 @@ func CreateUser(c *gin.Context) {
 		})
 		return
 	}
+	// Create the JWT token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = user.Name
+	claims["admin"] = true
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	t, err := token.SignedString([]byte("your_secret_key"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not sign the token"})
+		return
+	}
 	// user.Password = password
 	user.Password = utils.MakePassword(password, salt)
 	user.Salt = salt
+	user.Identity = t
 	models.CreateUser(user)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0, // 0 成功 -1失敗

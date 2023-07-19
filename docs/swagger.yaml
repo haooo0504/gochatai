@@ -1,3 +1,11 @@
+definitions:
+  service.UserInput:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -52,18 +60,18 @@ paths:
       tags:
       - 貼文資料
   /user/createUser:
-    get:
+    post:
       parameters:
       - description: 用戶名
-        in: query
+        in: formData
         name: name
         type: string
       - description: 密碼
-        in: query
+        in: formData
         name: password
         type: string
       - description: 確認密碼
-        in: query
+        in: formData
         name: repassword
         type: string
       responses:
@@ -92,16 +100,14 @@ paths:
       tags:
       - 用戶資料
   /user/findUserByNameAndPwd:
-    get:
+    post:
       parameters:
-      - description: 用戶名
-        in: query
-        name: name
-        type: string
-      - description: 密碼
-        in: query
-        name: password
-        type: string
+      - description: 用戶名和密碼
+        in: body
+        name: UserInput
+        required: true
+        schema:
+          $ref: '#/definitions/service.UserInput'
       responses:
         "200":
           description: code","message"}

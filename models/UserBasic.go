@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"gochatai/utils"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -39,14 +38,14 @@ func GetUserList() []*UserBasic {
 	return data
 }
 
-func FindUserByNameAndPwd(name string, password string) UserBasic {
+func FindUserByNameAndPwd(name string, password string, token string) UserBasic {
 	user := UserBasic{}
 	utils.DB.Where("name = ? and pass_word = ?", name, password).First(&user)
 
 	// token加密
-	str := fmt.Sprintf("%d", time.Now().Unix())
-	temp := utils.MD5Encode(str)
-	utils.DB.Model(&user).Where("id = ?", user.ID).Update("identity", temp)
+	// str := fmt.Sprintf("%d", time.Now().Unix())
+	// temp := utils.MD5Encode(str)
+	utils.DB.Model(&user).Where("id = ?", user.ID).Update("identity", token)
 	return user
 }
 
