@@ -96,16 +96,53 @@ func FindUserByNameAndPwd(c *gin.Context) {
 // CreateUser
 // @Summary 新增用戶
 // @Tags 用戶資料
-// @param name formData string false "用戶名"
-// @param password formData string false "密碼"
-// @param repassword formData string false "確認密碼"
+// @param email formData string true "電子郵件"
+// @param name formData string true "用戶名"
+// @param password formData string true "密碼"
+// @param repassword formData string true "確認密碼"
 // @Success 200 {string} json{"code","message"}
 // @Router /user/createUser [post]
 func CreateUser(c *gin.Context) {
 	user := models.UserBasic{}
+	user.Email = c.PostForm("email")
 	user.Name = c.PostForm("name")
 	password := c.PostForm("password")
 	repassword := c.PostForm("repassword")
+
+	isValidEmail := govalidator.IsEmail(user.Email)
+	// Check if the email is empty
+	if !isValidEmail {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    -1,
+			"message": "Email格式不正確",
+			"data":    user,
+		})
+		return
+	}
+	if user.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    -1,
+			"message": "Email是必填項目",
+			"data":    user,
+		})
+		return
+	}
+	if len(user.Name) < 1 {
+		c.JSON(-1, gin.H{
+			"code":    -1, // 0 成功 -1失敗
+			"message": "用戶名必須至少有一個字符",
+			"data":    user,
+		})
+		return
+	}
+	if len(password) < 6 || len(password) > 12 {
+		c.JSON(-1, gin.H{
+			"code":    -1, // 0 成功 -1失敗
+			"message": "密碼長度必須在6到12個字符之間",
+			"data":    user,
+		})
+		return
+	}
 
 	salt := fmt.Sprintf("%06d", rand.Int31())
 
@@ -138,15 +175,20 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not sign the token"})
 		return
 	}
+
 	// user.Password = password
 	user.Password = utils.MakePassword(password, salt)
 	user.Salt = salt
 	user.Identity = t
-	models.CreateUser(user)
+	newUser, err := models.CreateUser(&user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create user"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0, // 0 成功 -1失敗
 		"message": "新增用戶成功",
-		"data":    user,
+		"data":    newUser,
 	})
 }
 

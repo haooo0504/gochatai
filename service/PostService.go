@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,11 +17,17 @@ import (
 // @Security ApiKeyAuth
 // @Summary 貼文列表
 // @Tags 貼文資料
+// @param id query string false "id"
 // @Success 200 {string} json{"code","message"}
 // @Router /post/getPostList [get]
 func GetPostList(c *gin.Context) {
-	data := make([]*models.PostInfo, 10)
-	data = models.GetPostList()
+	id := c.Query("id")
+	userID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		// handle error
+	}
+	data := make([]*models.PostWithLikes, 10)
+	data = models.GetPostList(uint(userID))
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0, // 0 成功 -1失敗
@@ -69,7 +76,10 @@ func CreatePost(c *gin.Context) {
 	}
 	post.ImageURL = "/assets/images/" + filename
 
-	models.CreatePost(post)
-
-	c.JSON(http.StatusOK, gin.H{"post": post})
+	newPost, err := models.CreatePost(&post)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create post"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"post": newPost})
 }

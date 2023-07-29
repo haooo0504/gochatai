@@ -9,10 +9,10 @@ import (
 
 type UserBasic struct {
 	gorm.Model
-	Name          string
-	Password      string
+	Name          string `gorm:"not null"`
+	Password      string `gorm:"not null"`
 	Phone         string
-	Email         string `valid:"email"`
+	Email         string `gorm:"not null;valid:\"email\""`
 	Identity      string
 	ClientIp      string
 	ClientPort    string
@@ -23,6 +23,7 @@ type UserBasic struct {
 	IsLogout      bool
 	DeviceInfo    string
 	CanUseTime    uint64
+	Likes         []Like `gorm:"foreignKey:UserID"`
 }
 
 func (table *UserBasic) TableName() string {
@@ -64,8 +65,14 @@ func FindUserByEmail(email string) *gorm.DB {
 	return utils.DB.Where("email = ?", email).First(&user)
 }
 
-func CreateUser(user UserBasic) *gorm.DB {
-	return utils.DB.Create(&user)
+func CreateUser(user *UserBasic) (*UserBasic, error) {
+	result := utils.DB.Create(user)
+	if result.Error != nil {
+		// 如果创建操作失败，返回nil和错误
+		return nil, result.Error
+	}
+	// 如果创建操作成功，返回新创建的用户和nil错误
+	return user, nil
 }
 
 func DeleteUser(user UserBasic) *gorm.DB {

@@ -26,6 +26,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to auto migrate PostInfo: %v", err)
 	}
+	err = db.AutoMigrate(&models.Like{})
+	if err != nil {
+		log.Fatalf("failed to auto migrate Like: %v", err)
+	}
 
 	r := router.Router()
 	r.Run(":8082")

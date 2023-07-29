@@ -1,8 +1,8 @@
 package models
 
 import (
-	"fmt"
 	"gochatai/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -13,24 +13,56 @@ type PostInfo struct {
 	Title    string `gorm:"type:varchar(100)"`
 	Content  string `gorm:"type:text"`
 	ImageURL string `gorm:"type:varchar(255)"`
+	Likes    []Like `gorm:"foreignKey:PostID"`
 }
 
 func (table *PostInfo) TableName() string {
 	return "post_info"
 }
 
-// 獲取貼文列表
-func GetPostList() []*PostInfo {
-	data := make([]*PostInfo, 10)
-	utils.DB.Find(&data)
+type PostWithLikes struct {
+	PostInfo
+	LikeCount int
+	UserLiked bool
+}
+
+// 獲取五天內的貼文列表
+func GetPostList(userID uint) []*PostWithLikes {
+	data := make([]*PostInfo, 0)
+
+	// 获取五天前的日期
+	fiveDaysAgo := time.Now().AddDate(0, 0, -5)
+
+	// 只获取日期在五天内的帖子
+	utils.DB.Preload("Likes").Where("created_at > ?", fiveDaysAgo).Find(&data)
+
+	result := make([]*PostWithLikes, 0)
 	for _, v := range data {
-		fmt.Println(v)
+		userLiked := false
+		for _, like := range v.Likes {
+			if like.UserID == userID {
+				userLiked = true
+				break
+			}
+		}
+		postWithLikes := &PostWithLikes{
+			PostInfo:  *v,
+			LikeCount: len(v.Likes),
+			UserLiked: userLiked,
+		}
+		result = append(result, postWithLikes)
 	}
-	return data
+	return result
 }
 
 // 創建貼文
-func CreatePost(post PostInfo) *gorm.DB {
+func CreatePost(post *PostInfo) (*PostInfo, error) {
 	// 建立新的貼文
-	return utils.DB.Create(&post)
+	result := utils.DB.Create(post)
+	if result.Error != nil {
+		// 如果创建操作失败，返回nil和错误
+		return nil, result.Error
+	}
+	// 如果创建操作成功，返回新创建的貼文和nil错误
+	return post, nil
 }

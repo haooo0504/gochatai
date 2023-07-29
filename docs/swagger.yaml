@@ -9,6 +9,27 @@ definitions:
 info:
   contact: {}
 paths:
+  /like/addLike:
+    post:
+      parameters:
+      - description: 用戶ID
+        in: formData
+        name: userId
+        type: string
+      - description: 貼文ID
+        in: formData
+        name: postId
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 貼文按讚
+      tags:
+      - 貼文按讚
   /ping:
     get:
       responses:
@@ -49,6 +70,11 @@ paths:
       - 貼文資料
   /post/getPostList:
     get:
+      parameters:
+      - description: id
+        in: query
+        name: id
+        type: string
       responses:
         "200":
           description: code","message"}
@@ -62,17 +88,25 @@ paths:
   /user/createUser:
     post:
       parameters:
+      - description: 電子郵件
+        in: formData
+        name: email
+        required: true
+        type: string
       - description: 用戶名
         in: formData
         name: name
+        required: true
         type: string
       - description: 密碼
         in: formData
         name: password
+        required: true
         type: string
       - description: 確認密碼
         in: formData
         name: repassword
+        required: true
         type: string
       responses:
         "200":
