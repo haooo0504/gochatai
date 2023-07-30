@@ -24,6 +24,7 @@ func Router() *gin.Engine {
 	public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	public.POST("/user/createUser", service.CreateUser)
 	public.POST("/user/findUserByNameAndPwd", service.FindUserByNameAndPwd)
+	public.POST("/user/googleSignIn", service.GoogleSignIn)
 
 	// Private (authenticated) routes
 	private := r.Group("/")
@@ -62,7 +63,12 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			fmt.Println(err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    -1, // 0 成功 -1失敗
+				"message": err.Error(),
+			})
+			// c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
@@ -72,7 +78,11 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.Set("userID", claims["userID"])
 			c.Next()
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    -1, // 0 成功 -1失敗
+				"message": "Invalid token",
+			})
+			// c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 		}
 	}

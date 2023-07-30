@@ -161,6 +161,22 @@ paths:
       - ApiKeyAuth: []
       tags:
       - 用戶資料
+  /user/googleSignIn:
+    post:
+      parameters:
+      - description: idToken
+        in: formData
+        name: idToken
+        required: true
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: google登入
+      tags:
+      - 用戶資料
   /user/updateUser:
     post:
       parameters:

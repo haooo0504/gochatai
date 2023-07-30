@@ -10,7 +10,7 @@ import (
 type UserBasic struct {
 	gorm.Model
 	Name          string `gorm:"not null"`
-	Password      string `gorm:"not null"`
+	Password      string
 	Phone         string
 	Email         string `gorm:"not null;valid:\"email\""`
 	Identity      string
@@ -60,9 +60,10 @@ func FindUserByPhone(phone string) *gorm.DB {
 	return utils.DB.Where("phone = ?", phone).First(&user)
 }
 
-func FindUserByEmail(email string) *gorm.DB {
+func FindUserByEmail(email string) UserBasic {
 	user := UserBasic{}
-	return utils.DB.Where("email = ?", email).First(&user)
+	utils.DB.Where("email = ?", email).First(&user)
+	return user
 }
 
 func CreateUser(user *UserBasic) (*UserBasic, error) {

@@ -249,3 +249,67 @@ func UpdateUser(c *gin.Context) {
 	}
 
 }
+
+// GoogleSignIn
+// @Summary google登入
+// @Tags 用戶資料
+// @param idToken formData string true "idToken"
+// @Success 200 {string} json{"code","message"}
+// @Router /user/googleSignIn [post]
+func GoogleSignIn(c *gin.Context) {
+	idToken := c.PostForm("idToken")
+	user := models.UserBasic{}
+	payload, err := utils.ValidateGoogleIdToken(idToken)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    -1,
+			"message": "Invalid Google ID token",
+		})
+		return
+	}
+
+	// Create the JWT token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = user.Name
+	claims["admin"] = true
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	t, err := token.SignedString([]byte("your_secret_key"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not sign the token"})
+		return
+	}
+
+	user.Identity = t
+
+	// Replace these lines with the real values from the ID token
+	email := payload.Claims["email"].(string)
+	name, _ := utils.GetNameFromIdToken(idToken)
+	hasUser := models.FindUserByEmail(email)
+	fmt.Println(hasUser)
+	if hasUser.Name == "" {
+		// User does not exist yet, create a new one
+		user.Email = email
+		user.Name = name
+		newUser, err := models.CreateUser(&user)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create user"})
+			return
+		}
+		fmt.Println(user)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0, // 0 成功 -1失敗
+			"message": "註冊成功",
+			"data":    newUser,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0, // 0 成功 -1失敗
+			"message": "登入成功",
+			"data":    hasUser,
+		})
+	}
+
+}
