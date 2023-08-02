@@ -200,6 +200,10 @@ paths:
         in: formData
         name: email
         type: string
+      - description: 照片
+        in: formData
+        name: image
+        type: file
       responses:
         "200":
           description: code","message"}

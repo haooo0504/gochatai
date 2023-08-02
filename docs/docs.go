@@ -330,6 +330,12 @@ const docTemplate = `{
                         "description": "email",
                         "name": "email",
                         "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "照片",
+                        "name": "image",
+                        "in": "formData"
                     }
                 ],
                 "responses": {

@@ -23,6 +23,7 @@ type UserBasic struct {
 	IsLogout      bool
 	DeviceInfo    string
 	CanUseTime    uint64
+	ImageURL      string
 	Likes         []Like `gorm:"foreignKey:UserID"`
 }
 
@@ -81,5 +82,5 @@ func DeleteUser(user UserBasic) *gorm.DB {
 }
 
 func UpdateUser(user UserBasic) *gorm.DB {
-	return utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email})
+	return utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email, ImageURL: user.ImageURL, Salt: user.Salt})
 }

@@ -78,8 +78,13 @@ func CreatePost(c *gin.Context) {
 
 	newPost, err := models.CreatePost(&post)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create post"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": -1, // 0 成功 -1失敗
+			"message": "無法創建貼文"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"post": newPost})
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0, // 0 成功 -1失敗
+		"message": "創建貼文成功",
+		"data":    newPost,
+	})
 }
