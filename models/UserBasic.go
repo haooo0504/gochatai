@@ -85,9 +85,13 @@ func UpdateUser(user UserBasic) *gorm.DB {
 	return utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email, ImageURL: user.ImageURL, Salt: user.Salt})
 }
 
-func RefreshToken(name string, token string) UserBasic {
+func RefreshToken(id uint, name string, oldToken string, token string) (UserBasic, bool) {
 	user := UserBasic{}
-	utils.DB.Where("name = ?", name).First(&user)
-	utils.DB.Model(&user).Where("id = ?", user.ID).Update("identity", token)
-	return user
+	utils.DB.Where("id = ?", id).First(&user)
+	if user.Name == name && user.Identity == oldToken {
+		utils.DB.Model(&user).Where("id = ?", user.ID).Update("identity", token)
+		return user, true
+	} else {
+		return user, false
+	}
 }

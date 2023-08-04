@@ -346,16 +346,25 @@ func GoogleSignIn(c *gin.Context) {
 
 // RefreshToken
 // @Tags 更新token
-// @param name formData string true "name"
+// @param id formData uint true "id"
+// @param name formData string true "用戶名"
+// @param token formData string true "token"
 // @Success 200 {string} json{"code","message"}
 // @Router /user/RefreshToken [post]
 func RefreshToken(c *gin.Context) {
+	idStr := c.PostForm("id")
 	name := c.PostForm("name")
+	oldToken := c.PostForm("token")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
 
 	// Create the JWT token
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	claims["name"] = name
+	claims["id"] = id
 	claims["admin"] = true
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
@@ -365,11 +374,18 @@ func RefreshToken(c *gin.Context) {
 		return
 	}
 
-	data := models.RefreshToken(name, t)
+	data, correct := models.RefreshToken(uint(id), name, oldToken, t)
+	if correct {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0, // 0 成功 -1失敗
+			"message": "更新token成功",
+			"data":    data,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -1, // 0 成功 -1失敗
+			"message": "更新tokeng失敗",
+		})
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code":    0, // 0 成功 -1失敗
-		"message": "更新token成功",
-		"data":    data,
-	})
 }

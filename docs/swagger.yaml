@@ -88,9 +88,19 @@ paths:
   /user/RefreshToken:
     post:
       parameters:
-      - description: name
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: integer
+      - description: 用戶名
         in: formData
         name: name
+        required: true
+        type: string
+      - description: token
+        in: formData
+        name: token
         required: true
         type: string
       responses:
