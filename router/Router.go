@@ -17,6 +17,7 @@ import (
 func Router() *gin.Engine {
 	r := gin.Default()
 	r.Static("/assets/images", "./assets/images")
+	r.Static("/assets/userImages", "./assets/userImages")
 	docs.SwaggerInfo.BasePath = ""
 	// Public routes
 	public := r.Group("/")
