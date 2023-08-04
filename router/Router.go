@@ -25,6 +25,7 @@ func Router() *gin.Engine {
 	public.POST("/user/createUser", service.CreateUser)
 	public.POST("/user/findUserByNameAndPwd", service.FindUserByNameAndPwd)
 	public.POST("/user/googleSignIn", service.GoogleSignIn)
+	public.POST("/user/RefreshToken", service.RefreshToken)
 
 	// Private (authenticated) routes
 	private := r.Group("/")
@@ -37,6 +38,7 @@ func Router() *gin.Engine {
 	private.POST("/post/createPost", service.CreatePost)
 
 	private.POST("/like/addLike", service.AddLike)
+
 	return r
 }
 

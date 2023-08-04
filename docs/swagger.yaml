@@ -85,6 +85,21 @@ paths:
       summary: 貼文列表
       tags:
       - 貼文資料
+  /user/RefreshToken:
+    post:
+      parameters:
+      - description: name
+        in: formData
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      tags:
+      - 更新token
   /user/createUser:
     post:
       parameters:

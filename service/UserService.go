@@ -251,14 +251,14 @@ func UpdateUser(c *gin.Context) {
 	randomString := hex.EncodeToString(buf)
 
 	filename := fmt.Sprintf("%s-%s", randomString, filepath.Base(file.Filename))
-	directory := "assets/images/"
+	directory := "assets/userImages/"
 	os.MkdirAll(directory, os.ModePerm) // 確保目錄存在
 	path := filepath.Join(directory, filename)
 	if err := c.SaveUploadedFile(file, path); err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("upload file err: %s", err.Error()))
 		return
 	}
-	user.ImageURL = "/assets/images/" + filename
+	user.ImageURL = "/assets/userImages/" + filename
 
 	_, err := govalidator.ValidateStruct(user)
 	if err != nil {
@@ -342,4 +342,34 @@ func GoogleSignIn(c *gin.Context) {
 		})
 	}
 
+}
+
+// RefreshToken
+// @Tags 更新token
+// @param name formData string true "name"
+// @Success 200 {string} json{"code","message"}
+// @Router /user/RefreshToken [post]
+func RefreshToken(c *gin.Context) {
+	name := c.PostForm("name")
+
+	// Create the JWT token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = name
+	claims["admin"] = true
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	t, err := token.SignedString([]byte("your_secret_key"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not sign the token"})
+		return
+	}
+
+	data := models.RefreshToken(name, t)
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0, // 0 成功 -1失敗
+		"message": "更新token成功",
+		"data":    data,
+	})
 }

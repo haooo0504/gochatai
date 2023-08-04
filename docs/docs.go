@@ -142,6 +142,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/RefreshToken": {
+            "post": {
+                "tags": [
+                    "更新token"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "code\",\"message\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/createUser": {
             "post": {
                 "tags": [

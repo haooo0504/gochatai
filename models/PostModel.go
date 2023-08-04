@@ -9,11 +9,12 @@ import (
 
 type PostInfo struct {
 	gorm.Model
-	Author   string `gorm:"type:varchar(100)"`
-	Title    string `gorm:"type:varchar(100)"`
-	Content  string `gorm:"type:text"`
-	ImageURL string `gorm:"type:varchar(255)"`
-	Likes    []Like `gorm:"foreignKey:PostID"`
+	Author    string `gorm:"type:varchar(100)"`
+	AuthorImg string
+	Title     string `gorm:"type:varchar(100)"`
+	Content   string `gorm:"type:text"`
+	ImageURL  string `gorm:"type:varchar(255)"`
+	Likes     []Like `gorm:"foreignKey:PostID"`
 }
 
 func (table *PostInfo) TableName() string {
@@ -34,7 +35,12 @@ func GetPostList(userID uint) []*PostWithLikes {
 	fiveDaysAgo := time.Now().AddDate(0, 0, -5)
 
 	// 只获取日期在五天内的帖子
-	utils.DB.Preload("Likes").Where("created_at > ?", fiveDaysAgo).Find(&data)
+	utils.DB.Table("post_info").
+		Joins("left join user_basic on post_info.author = user_basic.name").
+		Preload("Likes").
+		Select("post_info.*, user_basic.image_url as author_img").
+		Where("post_info.created_at > ?", fiveDaysAgo).
+		Find(&data)
 
 	result := make([]*PostWithLikes, 0)
 	for _, v := range data {

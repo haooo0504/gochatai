@@ -84,3 +84,10 @@ func DeleteUser(user UserBasic) *gorm.DB {
 func UpdateUser(user UserBasic) *gorm.DB {
 	return utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email, ImageURL: user.ImageURL, Salt: user.Salt})
 }
+
+func RefreshToken(name string, token string) UserBasic {
+	user := UserBasic{}
+	utils.DB.Where("name = ?", name).First(&user)
+	utils.DB.Model(&user).Where("id = ?", user.ID).Update("identity", token)
+	return user
+}
