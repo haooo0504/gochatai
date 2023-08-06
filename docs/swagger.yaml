@@ -175,17 +175,6 @@ paths:
       summary: 用戶登入
       tags:
       - 用戶資料
-  /user/getUserList:
-    get:
-      responses:
-        "200":
-          description: code","message"}
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      tags:
-      - 用戶資料
   /user/googleSignIn:
     post:
       parameters:
@@ -209,13 +198,21 @@ paths:
         in: formData
         name: id
         type: string
-      - description: 用戶名
+      - description: 舊用戶名
         in: formData
-        name: name
+        name: oldname
         type: string
-      - description: 密碼
+      - description: 新用戶名
         in: formData
-        name: password
+        name: newname
+        type: string
+      - description: 舊密碼
+        in: formData
+        name: oldpassword
+        type: string
+      - description: 新密碼
+        in: formData
+        name: newpassword
         type: string
       - description: phone
         in: formData

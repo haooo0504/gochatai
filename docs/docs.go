@@ -282,26 +282,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/getUserList": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "tags": [
-                    "用戶資料"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "code\",\"message\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/user/googleSignIn": {
             "post": {
                 "tags": [
@@ -347,14 +327,26 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "用戶名",
-                        "name": "name",
+                        "description": "舊用戶名",
+                        "name": "oldname",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "密碼",
-                        "name": "password",
+                        "description": "新用戶名",
+                        "name": "newname",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "舊密碼",
+                        "name": "oldpassword",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "新密碼",
+                        "name": "newpassword",
                         "in": "formData"
                     },
                     {

@@ -22,21 +22,21 @@ type UserInput struct {
 	Password string `json:"password"`
 }
 
-// GetUserList
-// @Security ApiKeyAuth
-// @Tags 用戶資料
-// @Success 200 {string} json{"code","message"}
-// @Router /user/getUserList [get]
-func GetUserList(c *gin.Context) {
-	data := make([]*models.UserBasic, 10)
-	data = models.GetUserList()
+// // GetUserList
+// // @Security ApiKeyAuth
+// // @Tags 用戶資料
+// // @Success 200 {string} json{"code","message"}
+// // @Router /user/getUserList [get]
+// func GetUserList(c *gin.Context) {
+// 	data := make([]*models.UserBasic, 10)
+// 	data = models.GetUserList()
 
-	c.JSON(http.StatusOK, gin.H{
-		"code":    0, // 0 成功 -1失敗
-		"message": "獲取資料成功",
-		"data":    data,
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"code":    0, // 0 成功 -1失敗
+// 		"message": "獲取資料成功",
+// 		"data":    data,
+// 	})
+// }
 
 // GetUserList
 // @Summary 用戶登入
@@ -153,7 +153,7 @@ func CreateUser(c *gin.Context) {
 	if data.Name != "" {
 		c.JSON(-1, gin.H{
 			"code":    -1, // 0 成功 -1失敗
-			"message": "此用戶名稱已註冊",
+			"message": "此用戶名稱已被他人使用",
 			"data":    user,
 		})
 		return
@@ -219,8 +219,10 @@ func DeleteUser(c *gin.Context) {
 // @Summary 修改用戶
 // @Tags 用戶資料
 // @param id formData string false "id"
-// @param name formData string false "用戶名"
-// @param password formData string false "密碼"
+// @param oldname formData string false "舊用戶名"
+// @param newname formData string false "新用戶名"
+// @param oldpassword formData string false "舊密碼"
+// @param newpassword formData string false "新密碼"
 // @param phone formData string false "phone"
 // @param email formData string false "email"
 // @param image formData file false "照片"
@@ -230,50 +232,84 @@ func UpdateUser(c *gin.Context) {
 	user := models.UserBasic{}
 	id, _ := strconv.Atoi(c.PostForm("id"))
 	user.ID = uint(id)
-	user.Name = c.PostForm("name")
-	password := c.PostForm("password")
+	oldname := c.PostForm("oldname")
+	user.Name = c.PostForm("newname")
+	oldpassword := c.PostForm("oldpassword")
+	newpassword := c.PostForm("newpassword")
 	user.Phone = c.PostForm("phone")
 	user.Email = c.PostForm("email")
 
-	salt := fmt.Sprintf("%06d", rand.Int31())
-	user.Password = utils.MakePassword(password, salt)
-	user.Salt = salt
+	oldUser := models.FindUserByName(oldname)
+	if oldUser.Name == "" {
+		c.JSON(400, gin.H{
+			"code":    -1, // 0 成功 -1失敗
+			"message": "該用戶不存在",
+		})
+		return
+	}
+
+	flag := utils.ValidPassword(oldpassword, oldUser.Salt, oldUser.Password)
+	if !flag {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    -1, // 0 成功 -1失敗
+			"message": "密碼錯誤",
+		})
+		return
+	}
+
+	if user.Name != "" {
+		data := models.FindUserByName(user.Name)
+		if data.Name != "" {
+			c.JSON(-1, gin.H{
+				"code":    -1, // 0 成功 -1失敗
+				"message": "此用戶名稱已被他人使用",
+				"data":    user,
+			})
+			return
+		}
+	}
+	if newpassword != "" {
+		salt := fmt.Sprintf("%06d", rand.Int31())
+		user.Password = utils.MakePassword(newpassword, salt)
+		user.Salt = salt
+	}
 
 	// 從表單中取得上傳的圖片
 	file, _ := c.FormFile("image")
-	// 保存圖片到本地文件系統
-	// Generate a random string for filename
-	buf := make([]byte, 16) // 16 bytes will give us 32 hex characters
-	if _, err := rand.Read(buf); err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("generate random string err: %s", err.Error()))
-		return
-	}
-	randomString := hex.EncodeToString(buf)
+	if file != nil {
+		// 保存圖片到本地文件系統
+		// Generate a random string for filename
+		buf := make([]byte, 16) // 16 bytes will give us 32 hex characters
+		if _, err := rand.Read(buf); err != nil {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("generate random string err: %s", err.Error()))
+			return
+		}
+		randomString := hex.EncodeToString(buf)
 
-	filename := fmt.Sprintf("%s-%s", randomString, filepath.Base(file.Filename))
-	directory := "assets/userImages/"
-	os.MkdirAll(directory, os.ModePerm) // 確保目錄存在
-	path := filepath.Join(directory, filename)
-	if err := c.SaveUploadedFile(file, path); err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("upload file err: %s", err.Error()))
-		return
+		filename := fmt.Sprintf("%s-%s", randomString, filepath.Base(file.Filename))
+		directory := "assets/userImages/"
+		os.MkdirAll(directory, os.ModePerm) // 確保目錄存在
+		path := filepath.Join(directory, filename)
+		if err := c.SaveUploadedFile(file, path); err != nil {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("upload file err: %s", err.Error()))
+			return
+		}
+		user.ImageURL = "/assets/userImages/" + filename
 	}
-	user.ImageURL = "/assets/userImages/" + filename
 
 	_, err := govalidator.ValidateStruct(user)
+	curUser, err := models.UpdateUser(user)
 	if err != nil {
-		fmt.Println(err)
 		c.JSON(400, gin.H{
-			"code":    -1, // 0 成功 -1失敗
+			"code":    -1,
 			"message": "修改用戶失敗",
-			"data":    user,
+			"data":    err.Error(),
 		})
 	} else {
-		models.UpdateUser(user)
 		c.JSON(http.StatusOK, gin.H{
-			"code":    0, // 0 成功 -1失敗
+			"code":    0,
 			"message": "修改用戶成功",
-			"data":    user,
+			"data":    curUser,
 		})
 	}
 

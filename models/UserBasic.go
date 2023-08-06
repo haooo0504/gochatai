@@ -81,8 +81,18 @@ func DeleteUser(user UserBasic) *gorm.DB {
 	return utils.DB.Delete(&user)
 }
 
-func UpdateUser(user UserBasic) *gorm.DB {
-	return utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email, ImageURL: user.ImageURL, Salt: user.Salt})
+func UpdateUser(user UserBasic) (UserBasic, error) {
+	if err := utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email, ImageURL: user.ImageURL, Salt: user.Salt}).Error; err != nil {
+		return UserBasic{}, err
+	}
+
+	// 重新查詢更新後的用戶數據
+	var updatedUser UserBasic
+	if err := utils.DB.First(&updatedUser, user.ID).Error; err != nil {
+		return UserBasic{}, err
+	}
+
+	return updatedUser, nil
 }
 
 func RefreshToken(id uint, name string, oldToken string, token string) (UserBasic, bool) {

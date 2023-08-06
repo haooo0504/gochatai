@@ -31,7 +31,7 @@ func Router() *gin.Engine {
 	// Private (authenticated) routes
 	private := r.Group("/")
 	private.Use(JWTAuthMiddleware())
-	private.GET("/user/getUserList", service.GetUserList)
+	// private.GET("/user/getUserList", service.GetUserList)
 	private.GET("/user/deleteUser", service.DeleteUser)
 	private.POST("/user/updateUser", service.UpdateUser)
 
