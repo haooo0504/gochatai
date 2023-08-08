@@ -10,6 +10,7 @@ import (
 type PostInfo struct {
 	gorm.Model
 	Author    string `gorm:"type:varchar(100)"`
+	AuthorId  string
 	AuthorImg string
 	Title     string `gorm:"type:varchar(100)"`
 	Content   string `gorm:"type:text"`
@@ -40,6 +41,7 @@ func GetPostList(userID uint) []*PostWithLikes {
 		Preload("Likes").
 		Select("post_info.*, user_basic.image_url as author_img").
 		Where("post_info.created_at > ?", fiveDaysAgo).
+		Order("post_info.created_at desc"). // 从新到旧排序
 		Find(&data)
 
 	result := make([]*PostWithLikes, 0)
@@ -71,4 +73,16 @@ func CreatePost(post *PostInfo) (*PostInfo, error) {
 	}
 	// 如果创建操作成功，返回新创建的貼文和nil错误
 	return post, nil
+}
+
+// 刪除貼文
+func DeletePost(post *PostInfo) *gorm.DB {
+	println(post)
+	result := utils.DB.Delete(post)
+
+	if result.Error != nil {
+		println(result.Error)
+		return result
+	}
+	return result
 }

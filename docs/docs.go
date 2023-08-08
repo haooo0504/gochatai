@@ -86,6 +86,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "authorId",
+                        "name": "authorId",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
                         "description": "標題",
                         "name": "title",
                         "in": "formData"
@@ -101,6 +107,35 @@ const docTemplate = `{
                         "description": "照片",
                         "name": "image",
                         "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "code\",\"message\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/post/deletePost": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "貼文資料"
+                ],
+                "summary": "刪除貼文",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "postId",
+                        "name": "postId",
+                        "in": "query"
                     }
                 ],
                 "responses": {

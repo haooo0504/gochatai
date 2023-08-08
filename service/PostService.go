@@ -41,6 +41,7 @@ func GetPostList(c *gin.Context) {
 // @Summary 創建貼文
 // @Tags 貼文資料
 // @param author formData string false "用戶名"
+// @param authorId formData string false "authorId"
 // @param title formData string false "標題"
 // @param content formData string false "內容"
 // @param image formData file false "照片"
@@ -54,6 +55,7 @@ func CreatePost(c *gin.Context) {
 	post.Author = form.Value["author"][0]
 	post.Title = form.Value["title"][0]
 	post.Content = form.Value["content"][0]
+	post.AuthorId = form.Value["authorId"][0]
 
 	// 從表單中取得上傳的圖片
 	file, _ := c.FormFile("image")
@@ -86,5 +88,24 @@ func CreatePost(c *gin.Context) {
 		"code":    0, // 0 成功 -1失敗
 		"message": "創建貼文成功",
 		"data":    newPost,
+	})
+}
+
+// DeletePost
+// @Security ApiKeyAuth
+// @Summary 刪除貼文
+// @Tags 貼文資料
+// @param postId query string false "postId"
+// @Success 200 {string} json{"code","message"}
+// @Router /post/deletePost [get]
+func DeletePost(c *gin.Context) {
+	post := models.PostInfo{}
+	id, _ := strconv.Atoi(c.Query("postId"))
+	post.ID = uint(id)
+	models.DeletePost(&post)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0, // 0 成功 -1失敗
+		"message": "刪除貼文成功",
+		"data":    post,
 	})
 }

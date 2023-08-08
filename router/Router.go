@@ -37,6 +37,7 @@ func Router() *gin.Engine {
 
 	private.GET("/post/getPostList", service.GetPostList)
 	private.POST("/post/createPost", service.CreatePost)
+	private.GET("/post/deletePost", service.DeletePost)
 
 	private.POST("/like/addLike", service.AddLike)
 

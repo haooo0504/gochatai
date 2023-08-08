@@ -179,6 +179,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	user.IsGoogle = false
 	// user.Password = password
 	user.Password = utils.MakePassword(password, salt)
 	user.Salt = salt
@@ -348,6 +349,8 @@ func GoogleSignIn(c *gin.Context) {
 	}
 
 	user.Identity = t
+
+	user.IsGoogle = true
 
 	// Replace these lines with the real values from the ID token
 	email := payload.Claims["email"].(string)

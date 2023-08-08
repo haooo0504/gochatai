@@ -24,6 +24,7 @@ type UserBasic struct {
 	DeviceInfo    string
 	CanUseTime    uint64
 	ImageURL      string
+	IsGoogle      bool
 	Likes         []Like `gorm:"foreignKey:UserID"`
 }
 

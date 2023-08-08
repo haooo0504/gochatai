@@ -46,6 +46,10 @@ paths:
         in: formData
         name: author
         type: string
+      - description: authorId
+        in: formData
+        name: authorId
+        type: string
       - description: 標題
         in: formData
         name: title
@@ -66,6 +70,23 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 創建貼文
+      tags:
+      - 貼文資料
+  /post/deletePost:
+    get:
+      parameters:
+      - description: postId
+        in: query
+        name: postId
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 刪除貼文
       tags:
       - 貼文資料
   /post/getPostList:
