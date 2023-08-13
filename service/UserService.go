@@ -233,29 +233,30 @@ func UpdateUser(c *gin.Context) {
 	user := models.UserBasic{}
 	id, _ := strconv.Atoi(c.PostForm("id"))
 	user.ID = uint(id)
-	oldname := c.PostForm("oldname")
 	user.Name = c.PostForm("newname")
 	oldpassword := c.PostForm("oldpassword")
 	newpassword := c.PostForm("newpassword")
 	user.Phone = c.PostForm("phone")
 	user.Email = c.PostForm("email")
 
-	oldUser := models.FindUserByName(oldname)
-	if oldUser.Name == "" {
-		c.JSON(400, gin.H{
-			"code":    -1, // 0 成功 -1失敗
-			"message": "該用戶不存在",
-		})
-		return
-	}
+	oldUser := models.FindUserById(user.ID)
+	if !oldUser.IsGoogle {
+		if oldUser.Name == "" {
+			c.JSON(400, gin.H{
+				"code":    -1, // 0 成功 -1失敗
+				"message": "該用戶不存在",
+			})
+			return
+		}
 
-	flag := utils.ValidPassword(oldpassword, oldUser.Salt, oldUser.Password)
-	if !flag {
-		c.JSON(http.StatusOK, gin.H{
-			"code":    -1, // 0 成功 -1失敗
-			"message": "密碼錯誤",
-		})
-		return
+		flag := utils.ValidPassword(oldpassword, oldUser.Salt, oldUser.Password)
+		if !flag {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    -1, // 0 成功 -1失敗
+				"message": "密碼錯誤",
+			})
+			return
+		}
 	}
 
 	if user.Name != "" {
