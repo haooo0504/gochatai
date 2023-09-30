@@ -131,6 +131,22 @@ paths:
             type: string
       tags:
       - 更新token
+  /user/appleSignIn:
+    post:
+      parameters:
+      - description: idToken
+        in: formData
+        name: idToken
+        required: true
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: Apple
+      tags:
+      - 用戶資料
   /user/createUser:
     post:
       parameters:

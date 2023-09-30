@@ -429,3 +429,69 @@ func RefreshToken(c *gin.Context) {
 	}
 
 }
+
+// AppleSignIn
+// @Summary AppleSignIn
+// @Tags 用戶資料
+// @param idToken formData string true "idToken"
+// @Success 200 {string} json{"code","message"}
+// @Router /user/appleSignIn [post]
+func AppleSignIn(c *gin.Context) {
+	idToken := c.PostForm("idToken") // 从请求中获取 Apple ID token
+	user := models.UserBasic{}
+
+	// 验证 Apple ID token
+	token, err := utils.VerifyAppleToken(idToken)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    -1,
+			"message": "Invalid Apple ID token",
+		})
+		return
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		fmt.Println(claims, 455)
+		var userEmail string                  // 用于存储邮箱的变量
+		email, ok := claims["email"].(string) // 假设email在 claims 中
+		if !ok {
+			userEmail, ok = claims["sub"].(string)
+			if !ok {
+				c.JSON(http.StatusBadRequest, gin.H{"code": -1, "message": "Email is required"})
+				return
+			}
+		} else {
+			userEmail = email
+		}
+
+		hasUser := models.FindUserByEmail(userEmail)
+		if hasUser.Name == "" {
+			// 用户尚未存在，创建一个新的用户
+			user.Email = userEmail
+			// 添加任何其他需要的用户属性
+
+			newUser, err := models.CreateUser(&user)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"code":    -1,
+					"message": "無法創建用戶",
+				})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"code":    0,
+				"message": "註冊成功",
+				"data":    newUser,
+			})
+		} else {
+			// 用户已经存在，返回存在的用户
+			c.JSON(http.StatusOK, gin.H{
+				"code":    0,
+				"message": "登入成功",
+				"data":    hasUser,
+			})
+		}
+	}
+}

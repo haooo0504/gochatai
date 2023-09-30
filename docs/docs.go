@@ -215,6 +215,31 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/appleSignIn": {
+            "post": {
+                "tags": [
+                    "用戶資料"
+                ],
+                "summary": "Apple",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "idToken",
+                        "name": "idToken",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "code\",\"message\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/createUser": {
             "post": {
                 "tags": [
