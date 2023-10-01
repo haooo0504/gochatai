@@ -139,12 +139,17 @@ paths:
         name: idToken
         required: true
         type: string
+      - description: userName
+        in: formData
+        name: userName
+        required: true
+        type: string
       responses:
         "200":
           description: code","message"}
           schema:
             type: string
-      summary: Apple
+      summary: AppleSignIn
       tags:
       - 用戶資料
   /user/createUser:

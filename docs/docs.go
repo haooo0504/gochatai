@@ -220,12 +220,19 @@ const docTemplate = `{
                 "tags": [
                     "用戶資料"
                 ],
-                "summary": "Apple",
+                "summary": "AppleSignIn",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "idToken",
                         "name": "idToken",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "userName",
+                        "name": "userName",
                         "in": "formData",
                         "required": true
                     }

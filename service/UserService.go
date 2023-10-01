@@ -240,7 +240,7 @@ func UpdateUser(c *gin.Context) {
 	user.Email = c.PostForm("email")
 
 	oldUser := models.FindUserById(user.ID)
-	if !oldUser.IsGoogle {
+	if !oldUser.IsGoogle && !oldUser.IsApple {
 		if oldUser.Name == "" {
 			c.JSON(400, gin.H{
 				"code":    -1, // 0 成功 -1失敗
@@ -328,7 +328,6 @@ func GoogleSignIn(c *gin.Context) {
 	user := models.UserBasic{}
 	payload, err := utils.ValidateGoogleIdToken(idToken)
 	if err != nil {
-		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    -1,
 			"message": "Invalid Google ID token",
@@ -355,31 +354,42 @@ func GoogleSignIn(c *gin.Context) {
 
 	// Replace these lines with the real values from the ID token
 	email := payload.Claims["email"].(string)
+	sub := payload.Claims["sub"].(string)
 	name, _ := utils.GetNameFromIdToken(idToken)
-	hasUser := models.FindUserByEmail(email)
-	fmt.Println(hasUser)
+	hasUser := models.FindUserByGoogleSignIn(email, sub)
 	if hasUser.Name == "" {
 		// User does not exist yet, create a new one
 		user.Email = email
 		user.Name = name
+		user.TokenSub = sub
 		newUser, err := models.CreateUser(&user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"code": -1, // 0 成功 -1失敗
 				"message": "無法創建用戶"})
 			return
 		}
-		fmt.Println(user)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    0, // 0 成功 -1失敗
 			"message": "註冊成功",
 			"data":    newUser,
 		})
 	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"code":    0, // 0 成功 -1失敗
-			"message": "登入成功",
-			"data":    hasUser,
-		})
+		// 用户已经存在，返回存在的用户
+		user.ID = hasUser.ID
+		curUser, err := models.UpdateUser(user)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"code":    -1,
+				"message": "登入失敗",
+				"data":    err.Error(),
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    0,
+				"message": "登入成功",
+				"data":    curUser,
+			})
+		}
 	}
 
 }
@@ -434,16 +444,17 @@ func RefreshToken(c *gin.Context) {
 // @Summary AppleSignIn
 // @Tags 用戶資料
 // @param idToken formData string true "idToken"
+// @param userName formData string true "userName"
 // @Success 200 {string} json{"code","message"}
 // @Router /user/appleSignIn [post]
 func AppleSignIn(c *gin.Context) {
 	idToken := c.PostForm("idToken") // 从请求中获取 Apple ID token
+	userName := c.PostForm("userName")
 	user := models.UserBasic{}
 
 	// 验证 Apple ID token
 	token, err := utils.VerifyAppleToken(idToken)
 	if err != nil {
-		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    -1,
 			"message": "Invalid Apple ID token",
@@ -452,9 +463,9 @@ func AppleSignIn(c *gin.Context) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims, 455)
 		var userEmail string                  // 用于存储邮箱的变量
 		email, ok := claims["email"].(string) // 假设email在 claims 中
+		sub, ok := claims["sub"].(string)     // 假设email在 claims 中
 		if !ok {
 			userEmail, ok = claims["sub"].(string)
 			if !ok {
@@ -464,11 +475,30 @@ func AppleSignIn(c *gin.Context) {
 		} else {
 			userEmail = email
 		}
+		userEmail += "AppleId"
+		hasUser := models.FindUserByAppleSignIn(userEmail, sub)
+		// Create the JWT token
+		token := jwt.New(jwt.SigningMethodHS256)
+		claims := token.Claims.(jwt.MapClaims)
+		claims["name"] = user.Name
+		claims["admin"] = true
+		claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
-		hasUser := models.FindUserByEmail(userEmail)
+		t, err := token.SignedString([]byte("your_secret_key"))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not sign the token"})
+			return
+		}
+
+		user.Identity = t
+		user.IsApple = true
+
 		if hasUser.Name == "" {
+
 			// 用户尚未存在，创建一个新的用户
 			user.Email = userEmail
+			user.Name = userName
+			user.TokenSub = sub
 			// 添加任何其他需要的用户属性
 
 			newUser, err := models.CreateUser(&user)
@@ -487,11 +517,26 @@ func AppleSignIn(c *gin.Context) {
 			})
 		} else {
 			// 用户已经存在，返回存在的用户
-			c.JSON(http.StatusOK, gin.H{
-				"code":    0,
-				"message": "登入成功",
-				"data":    hasUser,
-			})
+			user.ID = hasUser.ID
+			curUser, err := models.UpdateUser(user)
+			if err != nil {
+				c.JSON(400, gin.H{
+					"code":    -1,
+					"message": "登入失敗",
+					"data":    err.Error(),
+				})
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"code":    0,
+					"message": "登入成功",
+					"data":    curUser,
+				})
+			}
+			// c.JSON(http.StatusOK, gin.H{
+			// 	"code":    0,
+			// 	"message": "登入成功",
+			// 	"data":    hasUser,
+			// })
 		}
 	}
 }

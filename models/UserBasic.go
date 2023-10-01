@@ -25,6 +25,8 @@ type UserBasic struct {
 	CanUseTime    uint64
 	ImageURL      string
 	IsGoogle      bool
+	IsApple       bool
+	TokenSub      string
 	Likes         []Like `gorm:"foreignKey:UserID"`
 }
 
@@ -89,7 +91,7 @@ func DeleteUser(user UserBasic) *gorm.DB {
 }
 
 func UpdateUser(user UserBasic) (UserBasic, error) {
-	if err := utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email, ImageURL: user.ImageURL, Salt: user.Salt}).Error; err != nil {
+	if err := utils.DB.Model(&user).Updates(UserBasic{Name: user.Name, Password: user.Password, Phone: user.Phone, Email: user.Email, ImageURL: user.ImageURL, Salt: user.Salt, Identity: user.Identity}).Error; err != nil {
 		return UserBasic{}, err
 	}
 
@@ -111,4 +113,16 @@ func RefreshToken(id uint, name string, oldToken string, token string) (UserBasi
 	} else {
 		return user, false
 	}
+}
+
+func FindUserByGoogleSignIn(email string, sub string) UserBasic {
+	user := UserBasic{}
+	utils.DB.Where("email = ? AND is_google = ? AND token_sub = ?", email, true, sub).First(&user)
+	return user
+}
+
+func FindUserByAppleSignIn(email string, sub string) UserBasic {
+	user := UserBasic{}
+	utils.DB.Where("email = ? AND is_apple = ? AND token_sub = ?", email, true, sub).First(&user)
+	return user
 }
