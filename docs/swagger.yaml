@@ -142,7 +142,6 @@ paths:
       - description: userName
         in: formData
         name: userName
-        required: true
         type: string
       responses:
         "200":

@@ -233,8 +233,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "userName",
                         "name": "userName",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {

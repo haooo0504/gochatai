@@ -444,7 +444,7 @@ func RefreshToken(c *gin.Context) {
 // @Summary AppleSignIn
 // @Tags 用戶資料
 // @param idToken formData string true "idToken"
-// @param userName formData string true "userName"
+// @param userName formData string false "userName"
 // @Success 200 {string} json{"code","message"}
 // @Router /user/appleSignIn [post]
 func AppleSignIn(c *gin.Context) {
@@ -497,7 +497,11 @@ func AppleSignIn(c *gin.Context) {
 
 			// 用户尚未存在，创建一个新的用户
 			user.Email = userEmail
-			user.Name = userName
+			if userName != "" {
+				user.Name = userName
+			} else {
+				user.Name = sub
+			}
 			user.TokenSub = sub
 			// 添加任何其他需要的用户属性
 
