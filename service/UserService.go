@@ -500,7 +500,7 @@ func AppleSignIn(c *gin.Context) {
 			if userName != "" {
 				user.Name = userName
 			} else {
-				user.Name = sub
+				user.Name = "user" + fmt.Sprintf("%d", time.Now().Unix())
 			}
 			user.TokenSub = sub
 			// 添加任何其他需要的用户属性
