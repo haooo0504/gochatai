@@ -216,6 +216,16 @@ paths:
       summary: 用戶登入
       tags:
       - 用戶資料
+  /user/getUserList:
+    get:
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 用戶列表
+      tags:
+      - 用戶資料
   /user/googleSignIn:
     post:
       parameters:

@@ -1,8 +1,8 @@
 package models
 
 import (
-	"fmt"
 	"gochatai/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -30,17 +30,26 @@ type UserBasic struct {
 	Likes         []Like `gorm:"foreignKey:UserID"`
 }
 
+type UserAccountInfo struct {
+	ID        uint      // 用户ID通常是账号的唯一标识
+	CreatedAt time.Time // GORM Model的CreatedAt字段用于存储记录的创建时间
+	Name      string
+	Email     string
+	IsGoogle  bool
+	IsApple   bool
+}
+
 func (table *UserBasic) TableName() string {
 	return "user_basic"
 }
 
-func GetUserList() []*UserBasic {
-	data := make([]*UserBasic, 10)
-	utils.DB.Find(&data)
-	for _, v := range data {
-		fmt.Println(v)
+func GetUserList() ([]*UserAccountInfo, error) {
+	var data []*UserAccountInfo
+	result := utils.DB.Model(&UserBasic{}).Select("id", "created_at", "name", "email", "is_google", "is_apple").Find(&data)
+	if result.Error != nil {
+		return nil, result.Error
 	}
-	return data
+	return data, nil
 }
 
 func FindUserByNameAndPwd(name string, password string, token string) UserBasic {

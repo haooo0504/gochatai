@@ -14,8 +14,26 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// 跨域問題
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204) // No content, but the headers are sent
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func Router() *gin.Engine {
 	r := gin.Default()
+	r.Use(CORSMiddleware()) // 跨域問題
 	r.Static("/assets/images", "./assets/images")
 	r.Static("/assets/userImages", "./assets/userImages")
 	docs.SwaggerInfo.BasePath = ""
@@ -28,11 +46,11 @@ func Router() *gin.Engine {
 	public.POST("/user/googleSignIn", service.GoogleSignIn)
 	public.POST("/user/appleSignIn", service.AppleSignIn)
 	public.POST("/user/RefreshToken", service.RefreshToken)
+	public.GET("/user/getUserList", service.GetUserList)
 
 	// Private (authenticated) routes
 	private := r.Group("/")
 	private.Use(JWTAuthMiddleware())
-	// private.GET("/user/getUserList", service.GetUserList)
 	private.GET("/user/deleteUser", service.DeleteUser)
 	private.POST("/user/updateUser", service.UpdateUser)
 

@@ -348,6 +348,22 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/getUserList": {
+            "get": {
+                "tags": [
+                    "用戶資料"
+                ],
+                "summary": "用戶列表",
+                "responses": {
+                    "200": {
+                        "description": "code\",\"message\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/googleSignIn": {
             "post": {
                 "tags": [

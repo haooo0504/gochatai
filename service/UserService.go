@@ -22,21 +22,28 @@ type UserInput struct {
 	Password string `json:"password"`
 }
 
-// // GetUserList
-// // @Security ApiKeyAuth
-// // @Tags 用戶資料
-// // @Success 200 {string} json{"code","message"}
-// // @Router /user/getUserList [get]
-// func GetUserList(c *gin.Context) {
-// 	data := make([]*models.UserBasic, 10)
-// 	data = models.GetUserList()
-
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"code":    0, // 0 成功 -1失敗
-// 		"message": "獲取資料成功",
-// 		"data":    data,
-// 	})
-// }
+// GetUserList
+// @Summary 用戶列表
+// @Tags 用戶資料
+// @Success 200 {string} json{"code","message"}
+// @Router /user/getUserList [get]
+func GetUserList(c *gin.Context) {
+	// data := make([]*models.UserBasic, 10)
+	// data = models.GetUserList()
+	data, err := models.GetUserList()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    -1,
+			"message": "獲取資料失敗",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0, // 0 成功 -1失敗
+		"message": "獲取資料成功",
+		"data":    data,
+	})
+}
 
 // GetUserList
 // @Summary 用戶登入
