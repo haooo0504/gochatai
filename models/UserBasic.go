@@ -37,6 +37,7 @@ type UserAccountInfo struct {
 	Email     string
 	IsGoogle  bool
 	IsApple   bool
+	ImageURL  string
 }
 
 func (table *UserBasic) TableName() string {
@@ -45,7 +46,7 @@ func (table *UserBasic) TableName() string {
 
 func GetUserList() ([]*UserAccountInfo, error) {
 	var data []*UserAccountInfo
-	result := utils.DB.Model(&UserBasic{}).Select("id", "created_at", "name", "email", "is_google", "is_apple").Find(&data)
+	result := utils.DB.Model(&UserBasic{}).Select("id", "created_at", "name", "email", "is_google", "is_apple", "image_url").Find(&data)
 	if result.Error != nil {
 		return nil, result.Error
 	}
